@@ -8,7 +8,7 @@ Wealthfolio is a private, local-first personal finance tracker. It follows your 
 
 Deploy, wait for the green check, and open the Railway domain. Sign in with `WF_PASSWORD`, which is generated for you on the service's Variables tab. To choose your own password, change `WF_PASSWORD` and redeploy.
 
-**Your data lives on the volume at `/data`:** the database (`wealthfolio.db`), the encrypted vault for saved credentials (`secrets.json`), and any profiles you add. Redeploys, restarts and upgrades keep them. Back the volume up with Railway's volume backups.
+**Your data lives on the volume at `/data`:** one SQLite database per profile (`profiles/<id>/app.db`), the profile list, and the encrypted vault for saved credentials (`secrets.json`). Redeploys, restarts and upgrades keep them. Back the volume up with Railway's volume backups.
 
 **Keep `WF_SECRET_KEY` as it is.** It encrypts saved credentials, such as market-data provider keys, and signs logins. If you change it after the first boot, Wealthfolio can no longer read the credentials it saved.
 
@@ -44,6 +44,8 @@ Deploy, wait for the green check, and open the Railway domain. Sign in with `WF_
 - **CORS:** `WF_CORS_ALLOW_ORIGINS` is set from the Railway domain. Upstream refuses to start with a password and no explicit origin.
 - **Never crash-looping on a variable:** if the server stops within a minute of starting, for example on an invalid OIDC setting, the service shows a "Wealthfolio is not running" page. The deploy logs say which variable to fix.
 - **Volume ownership:** Railway mounts volumes as root, so the entrypoint hands `/data` to the image's user (uid 1000) and then runs the server as that user, like upstream.
+- **Market data:** prices come from Yahoo Finance by default, and work from Railway (tested with a stock holding valued at the live price).
+- **Memory:** the server idles at about 20 MB.
 - **Healthcheck:** `/api/v1/healthz`.
 - **Image:** upstream's `wealthfolio/wealthfolio:3.13.1`, pinned, plus a small entrypoint. The database migrates itself when the version is bumped.
 
